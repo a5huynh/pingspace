@@ -1,3 +1,5 @@
+mod tui;
+
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -149,5 +151,5 @@ async fn run_tui_mode(agent: Arc<Agent>, initial_message: Option<String>) -> any
     // If there's an initial message, we'll let the TUI handle it
     // For now, just launch the TUI
     let _ = initial_message; // TODO: send as first prompt in TUI
-    pingspace::tui::run(agent).await
+    crate::tui::run(agent).await
 }

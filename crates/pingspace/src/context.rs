@@ -152,10 +152,7 @@ mod tests {
 
         let files = load_context_files(&child);
         // Should find at least the two we created (may also find global)
-        let our_files: Vec<_> = files
-            .iter()
-            .filter(|f| f.path.starts_with(&base))
-            .collect();
+        let our_files: Vec<_> = files.iter().filter(|f| f.path.starts_with(&base)).collect();
         assert_eq!(our_files.len(), 2);
         // Root-most should come first
         assert!(our_files[0].content.contains("root rules"));

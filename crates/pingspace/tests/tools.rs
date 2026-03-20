@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use pingspace::tools::*;
+use std::path::PathBuf;
 
 fn test_dir(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("pingspace_test_{name}"));
@@ -45,7 +45,10 @@ async fn test_read_with_offset_limit() {
     let write_tool = write::WriteTool::new(dir.clone());
     let read_tool = read::ReadTool::new(dir.clone());
 
-    let content = (1..=10).map(|i| format!("line {i}")).collect::<Vec<_>>().join("\n");
+    let content = (1..=10)
+        .map(|i| format!("line {i}"))
+        .collect::<Vec<_>>()
+        .join("\n");
     write_tool
         .execute(
             serde_json::json!({ "path": "lines.txt", "content": content }),
@@ -78,7 +81,10 @@ async fn test_read_file_not_found() {
     let read_tool = read::ReadTool::new(dir.clone());
 
     let result = read_tool
-        .execute(serde_json::json!({ "path": "nonexistent.txt" }), &noop_update)
+        .execute(
+            serde_json::json!({ "path": "nonexistent.txt" }),
+            &noop_update,
+        )
         .await
         .unwrap();
     assert!(result.is_error);

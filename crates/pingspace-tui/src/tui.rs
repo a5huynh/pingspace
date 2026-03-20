@@ -2,14 +2,14 @@ use std::io;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crossterm::ExecutableCommand;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
-use crossterm::ExecutableCommand;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 use tokio::sync::mpsc;
 
-use crate::agent::{Agent, AgentEvent};
+use pingspace::agent::{Agent, AgentEvent};
 
 // ---------------------------------------------------------------------------
 // Display messages — what we render in the chat pane
@@ -20,8 +20,15 @@ enum ChatEntry {
     User(String),
     AssistantText(String),
     Thinking(String),
-    ToolCall { name: String, args: String },
-    ToolResult { name: String, error: bool, summary: String },
+    ToolCall {
+        name: String,
+        args: String,
+    },
+    ToolResult {
+        name: String,
+        error: bool,
+        summary: String,
+    },
     Status(String),
     Error(String),
 }
@@ -257,7 +264,9 @@ fn handle_agent_event(event: AgentEvent, state: &mut TuiState) {
                 state.push_chat(ChatEntry::Thinking(text));
             }
         }
-        AgentEvent::ToolCallStart { name, arguments, .. } => {
+        AgentEvent::ToolCallStart {
+            name, arguments, ..
+        } => {
             state.flush_assistant_text();
             let args = arguments.to_string();
             let args_short = if args.len() > 100 {
@@ -356,10 +365,7 @@ fn draw_chat(f: &mut Frame, area: Rect, state: &mut TuiState) {
                             Span::raw(line),
                         ]));
                     } else {
-                        lines.push(Line::from(vec![
-                            Span::raw("    "),
-                            Span::raw(line),
-                        ]));
+                        lines.push(Line::from(vec![Span::raw("    "), Span::raw(line)]));
                     }
                 }
             }
@@ -381,7 +387,11 @@ fn draw_chat(f: &mut Frame, area: Rect, state: &mut TuiState) {
                     Span::styled(format!("({args})"), Style::default().fg(Color::DarkGray)),
                 ]));
             }
-            ChatEntry::ToolResult { name, error, summary } => {
+            ChatEntry::ToolResult {
+                name,
+                error,
+                summary,
+            } => {
                 let (icon, color) = if *error {
                     ("  ✗ ", Color::Red)
                 } else {
@@ -419,14 +429,14 @@ fn draw_chat(f: &mut Frame, area: Rect, state: &mut TuiState) {
                     Span::raw(line),
                 ]));
             } else {
-                lines.push(Line::from(vec![
-                    Span::raw("    "),
-                    Span::raw(line),
-                ]));
+                lines.push(Line::from(vec![Span::raw("    "), Span::raw(line)]));
             }
         }
         if state.is_streaming {
-            lines.push(Line::from(Span::styled("    ▌", Style::default().fg(Color::Cyan))));
+            lines.push(Line::from(Span::styled(
+                "    ▌",
+                Style::default().fg(Color::Cyan),
+            )));
         }
     }
 
@@ -465,13 +475,12 @@ fn draw_input(f: &mut Frame, area: Rect, state: &TuiState) {
         " message (Enter to send) "
     };
 
-    let input = Paragraph::new(state.input.as_str())
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(border_color))
-                .title(title),
-        );
+    let input = Paragraph::new(state.input.as_str()).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(border_color))
+            .title(title),
+    );
 
     f.render_widget(input, area);
 
@@ -485,7 +494,6 @@ fn draw_input(f: &mut Frame, area: Rect, state: &TuiState) {
 }
 
 fn draw_footer(f: &mut Frame, area: Rect, state: &TuiState) {
-    let footer = Paragraph::new(state.status.as_str())
-        .style(Style::default().fg(Color::DarkGray));
+    let footer = Paragraph::new(state.status.as_str()).style(Style::default().fg(Color::DarkGray));
     f.render_widget(footer, area);
 }

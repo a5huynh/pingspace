@@ -1260,13 +1260,9 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
- "clap 4.6.0",
- "crossterm",
  "dirs",
- "dotenv",
  "eventsource-stream",
  "futures",
- "ratatui",
  "reqwest",
  "serde",
  "serde_json",
@@ -1275,8 +1271,23 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "pingspace-tui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap 4.6.0",
+ "crossterm",
+ "dotenv",
+ "pingspace",
+ "ratatui",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

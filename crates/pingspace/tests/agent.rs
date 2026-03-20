@@ -47,7 +47,11 @@ async fn test_agent_simple_text_response() {
 async fn test_agent_tool_call_loop() {
     // Mock: first response calls bash tool, second response is final text
     let provider = Arc::new(MockProvider::new(vec![
-        MockResponse::tool_call("call_1", "bash", serde_json::json!({"command": "echo hello"})),
+        MockResponse::tool_call(
+            "call_1",
+            "bash",
+            serde_json::json!({"command": "echo hello"}),
+        ),
         MockResponse::text("The command output was: hello"),
     ]));
 
@@ -122,14 +126,24 @@ async fn test_agent_unknown_tool() {
     }
 
     handle.await.unwrap();
-    assert!(saw_tool_error, "Expected tool error, got events: {:#?}", all_events);
+    assert!(
+        saw_tool_error,
+        "Expected tool error, got events: {:#?}",
+        all_events
+    );
 }
 
 #[tokio::test]
 async fn test_agent_max_turns() {
     // Provider always returns tool calls — should hit max_turns
     let responses: Vec<MockResponse> = (0..10)
-        .map(|i| MockResponse::tool_call(format!("call_{i}"), "bash", serde_json::json!({"command": "echo hi"})))
+        .map(|i| {
+            MockResponse::tool_call(
+                format!("call_{i}"),
+                "bash",
+                serde_json::json!({"command": "echo hi"}),
+            )
+        })
         .collect();
 
     let provider = Arc::new(MockProvider::new(responses));

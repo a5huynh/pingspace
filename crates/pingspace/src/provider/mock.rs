@@ -3,8 +3,8 @@
 use async_trait::async_trait;
 use tokio::sync::mpsc;
 
-use crate::types::*;
 use super::{CompletionRequest, CompletionStream, Provider, StopReason, StreamEvent};
+use crate::types::*;
 
 /// A pre-configured response the mock provider will return.
 #[derive(Clone)]
@@ -23,7 +23,11 @@ impl MockResponse {
     }
 
     /// Response with a single tool call.
-    pub fn tool_call(id: impl Into<String>, name: impl Into<String>, arguments: serde_json::Value) -> Self {
+    pub fn tool_call(
+        id: impl Into<String>,
+        name: impl Into<String>,
+        arguments: serde_json::Value,
+    ) -> Self {
         Self {
             content: vec![ContentBlock::tool_use(id, name, arguments)],
             stop_reason: StopReason::ToolUse,
@@ -93,25 +97,35 @@ impl Provider for MockProvider {
                     ContentBlock::Text { text } => {
                         let _ = tx.send(StreamEvent::TextDelta(text.clone())).await;
                     }
-                    ContentBlock::ToolUse { id, name, arguments } => {
-                        let _ = tx.send(StreamEvent::ToolCallStart {
-                            id: id.clone(),
-                            name: name.clone(),
-                        }).await;
-                        let _ = tx.send(StreamEvent::ToolCallEnd {
-                            id: id.clone(),
-                            name: name.clone(),
-                            arguments: arguments.clone(),
-                        }).await;
+                    ContentBlock::ToolUse {
+                        id,
+                        name,
+                        arguments,
+                    } => {
+                        let _ = tx
+                            .send(StreamEvent::ToolCallStart {
+                                id: id.clone(),
+                                name: name.clone(),
+                            })
+                            .await;
+                        let _ = tx
+                            .send(StreamEvent::ToolCallEnd {
+                                id: id.clone(),
+                                name: name.clone(),
+                                arguments: arguments.clone(),
+                            })
+                            .await;
                     }
                     _ => {}
                 }
             }
 
-            let _ = tx.send(StreamEvent::MessageEnd {
-                stop_reason,
-                usage: Usage::default(),
-            }).await;
+            let _ = tx
+                .send(StreamEvent::MessageEnd {
+                    stop_reason,
+                    usage: Usage::default(),
+                })
+                .await;
 
             Ok(Message::assistant(content))
         });
